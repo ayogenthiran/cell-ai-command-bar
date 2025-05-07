@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cell AI Command Bar - Standalone Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    .card {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 0 8px 8px 0;
+    }
+    button:hover {
+      background-color: #4338ca;
+    }
+    .log {
+      background-color: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 12px;
+      font-family: monospace;
+      height: 200px;
+      overflow-y: auto;
+      margin-top: 16px;
+    }
+    .log-entry {
+      margin-bottom: 4px;
+    }
+    .timestamp {
+      color: #6b7280;
+      font-size: 0.8rem;
+    }
+    .shortcut {
+      display: inline-block;
+      background-color: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin: 0 2px;
+    }
+    .hint {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Cell AI Command Bar - Standalone Test</h1>
+  
+  <div class="card">
+    <h2>Command Bar Demo</h2>
+    <p>This is a simplified version of Cell that demonstrates the core functionality:</p>
+    <ul>
+      <li>Network API call interception</li>
+      <li>Command bar interface (<span class="shortcut">Cmd</span>+<span class="shortcut">K</span> or <span class="shortcut">Ctrl</span>+<span class="shortcut">K</span>)</li>
+      <li>OpenAI integration for AI-enhanced commands</li>
+    </ul>
+    
+    <div>
+      <button id="init-btn">Initialize Cell</button>
+      <button id="cmd-btn">Open Command Bar</button>
+      <button id="api-btn">Make API Call</button>
+      <button id="stop-btn">Stop Cell</button>
+    </div>
+    
+    <p class="hint">After initializing, try pressing <span class="shortcut">Cmd</span>+<span class="shortcut">K</span> (Mac) or <span class="shortcut">Ctrl</span>+<span class="shortcut">K</span> (Windows) to show the command bar.</p>
+    
+    <div class="log" id="log"></div>
+  </div>
+  
+  <!-- Load configuration first -->
+  <script src="config.js"></script>
+  
+  <!-- Load the standalone Cell implementation -->
+  <script src="standalone-cell.js"></script>
+  
+  <script>
+    // Create a logging function
+    function log(message) {
+      const logElement = document.getElementById('log');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      
+      const timestamp = document.createElement('span');
+      timestamp.className = 'timestamp';
+      timestamp.textContent = `[${new Date().toLocaleTimeString()}] `;
+      
+      const content = document.createElement('span');
+      content.textContent = message;
+      
+      entry.appendChild(timestamp);
+      entry.appendChild(content);
+      logElement.appendChild(entry);
+      
+      // Scroll to bottom
+      logElement.scrollTop = logElement.scrollHeight;
+    }
+    
+    // Override console.log
+    const originalConsoleLog = console.log;
+    console.log = function(...args) {
+      originalConsoleLog.apply(console, args);
+      log(args.join(' '));
+    };
+    
+    // Override console.error
+    const originalConsoleError = console.error;
+    console.error = function(...args) {
+      originalConsoleError.apply(console, args);
+      log(`ERROR: ${args.join(' ')}`);
+    };
+    
+    let cellInstance = null;
+    
+    // Initialize button
+    document.getElementById('init-btn').addEventListener('click', function() {
+      if (cellInstance) {
+        log('Cell is already initialized');
+        return;
+      }
+      
+      try {
+        log('Initializing Cell...');
+        cellInstance = new Cell({
+          appId: 'standalone-test',
+          enableAI: true
+        });
+        cellInstance.start();
+      } catch (error) {
+        log(`Error initializing Cell: ${error.message}`);
+      }
+    });
+    
+    // Command Bar button
+    document.getElementById('cmd-btn').addEventListener('click', function() {
+      if (!cellInstance) {
+        log('Cell is not initialized yet. Click "Initialize Cell" first.');
+        return;
+      }
+      
+      cellInstance.showCommandBar();
+    });
+    
+    // API Call button
+    document.getElementById('api-btn').addEventListener('click', function() {
+      log('Making API call to JSONPlaceholder...');
+      
+      fetch('https://jsonplaceholder.typicode.com/todos/1')
+        .then(response => response.json())
+        .then(data => {
+          log(`API response: ${JSON.stringify(data)}`);
+        })
+        .catch(error => {
+          log(`API error: ${error.message}`);
+        });
+    });
+    
+    // Stop button
+    document.getElementById('stop-btn').addEventListener('click', function() {
+      if (!cellInstance) {
+        log('Cell is not running');
+        return;
+      }
+      
+      cellInstance.stop();
+      cellInstance = null;
+    });
+    
+    // Initial log
+    log('Cell AI Command Bar standalone test loaded');
+  </script>
+</body>
+</html> 
