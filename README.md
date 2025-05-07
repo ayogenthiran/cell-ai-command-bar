@@ -1,5 +1,7 @@
 # Cell: AI Command Bar for SaaS Applications
 
+![Cell AI Command Bar UI](assets/UI.png)
+
 Cell is an embedded AI command bar for SaaS applications that captures network/API calls, predicts user actions, and automates workflows. It provides a friction-free experience similar to Cursor but inside any SaaS product.
 
 ## Features
